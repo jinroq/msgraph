@@ -1,8 +1,9 @@
 require 'msgraph/version'
+require 'msgraph/token'
+require 'msgraph/user'
+
 require 'httpclient'
 require 'json'
-
-require 'msgraph/token'
 
 module Msgraph
   class Error < StandardError; end
@@ -18,34 +19,10 @@ module Msgraph
       { client_id: client_id,
         client_secret: client_secret,
         tenant_id: tenant_id }
-    ).token
+    ).access_token
 
-    client = HTTPClient.new
-    query = {}
-    header = { 'Authorization' => "Bearer #{token}",
-               'Content-Type' => 'application/json',
-             }
-    response = client.get("#{BASE_URL}/v1.0/users/", query, header)
-    raise "#{response.message}" unless response.code == 200
-    body = JSON.parse(response.body)
-
-    # @odata.context
-    puts "body['@odata.context'] => #{body['@odata.context']}"
-    # value
-    users = body['value']
-    users.each do |user|
-      puts "id => #{user['id']}"
-      puts "userPrincipalName => #{user['userPrincipalName']}"
-      puts "displayName => #{user['displayName']}"
-      puts "givenName => #{user['givenName']}"
-      puts "jobTitle => #{user['jobTitle']}"
-      puts "mail => #{user['mail']}"
-      puts "mobilePhone => #{user['mobilePhone']}"
-      puts "businessPhones => #{user['businessPhones'].inspect}"
-      puts "officeLocation => #{user['officeLocation']}"
-      puts "preferredLanguage => #{user['preferredLanguage']}"
-      puts "surname => #{user['surname']}"
-    end
+    user = Msgraph::User.new(token: token)
+    puts "user.list => #{user.list.inspect}"
 
   end
 end

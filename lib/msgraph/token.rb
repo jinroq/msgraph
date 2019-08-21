@@ -9,16 +9,16 @@ module Msgraph
 
     def initialize(args = {})
       raise TokenError.new("Does not exist Client ID or Application ID") unless args.key?(:client_id) || args.key?(:application_id)
-      client_id = args[:client_id] || args[:application_id]
+      @client_id = args[:client_id] || args[:application_id]
 
       raise TokenError.new("Does not exist ClientSecret") unless args.key?(:client_secret)
-      client_secret = args[:client_secret]
+      @client_secret = args[:client_secret]
 
       raise TokenError.new("Does not exist Tenant ID or Directory ID") unless args.key?(:tenant_id) || args.key?(:directory_id)
-      tenant_id = args[:tenant_id] || args[:directory_id]
+      @tenant_id = args[:tenant_id] || args[:directory_id]
     end
 
-    def token
+    def access_token
       body['access_token']
     end
 
@@ -51,7 +51,7 @@ module Msgraph
           multipart: true,
         }
       )
-      raise TokenError.new("#{token_response.message}") unless response.code == 200
+      raise TokenError.new("#{response.message}") unless response.code == 200
 
       return JSON.parse(response.body)
     end
