@@ -52,9 +52,8 @@ module Msgraph
         }
       )
       raise TokenError.new("#{token_response.message}") unless response.code == 200
-      body = JSON.parse(response.body)
-      puts "body => #{body.inspect}"
-      return body
+
+      return JSON.parse(response.body)
     end
 
   end
