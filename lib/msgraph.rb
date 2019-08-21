@@ -2,11 +2,10 @@ require 'msgraph/version'
 require 'httpclient'
 require 'json'
 
+require 'msgraph/token'
+
 module Msgraph
   class Error < StandardError; end
-
-  TOKEN_BASE_URL = 'https://login.microsoftonline.com'.freeze
-  TOKEN_REQUEST_PATH = 'oauth2/v2.0/token'.freeze
 
   BASE_URL = 'https://graph.microsoft.com'.freeze
 
@@ -15,23 +14,13 @@ module Msgraph
     client_secret = args[:client_secret]
     tenant_id = args[:tenant_id] || args[:directory_id]
 
-    client = HTTPClient.new
-    token_response = client.post(
-      "#{TOKEN_BASE_URL}/#{tenant_id}/#{TOKEN_REQUEST_PATH}",
-      {
-        body: {
-          client_id: client_id,
-          client_secret: client_secret,
-          scope: 'https://graph.microsoft.com/.default',
-          grant_type: 'client_credentials',
-        },
-        'Content-Type' => 'application/json',
-        multipart: true,
-      }
-    )
-    raise "#{token_response.message}" unless token_response.code == 200
-    token = JSON.parse(token_response.body)['access_token']
+    token = Msgraph::Token.new(
+      { client_id: client_id,
+        client_secret: client_secret,
+        tenant_id: tenant_id }
+    ).token
 
+    client = HTTPClient.new
     query = {}
     header = { 'Authorization' => "Bearer #{token}",
                'Content-Type' => 'application/json',
