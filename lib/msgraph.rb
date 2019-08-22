@@ -22,7 +22,8 @@ module Msgraph
     ).access_token
 
     user = Msgraph::User.new(token: token)
-    puts "user.list => #{user.list.inspect}"
+#    puts "user.list => #{user.list.inspect}"
+    puts "user.get(id: args[:id]) => #{user.get(id: args[:id]).inspect}"
 
   end
 end

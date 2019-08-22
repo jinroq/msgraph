@@ -6,7 +6,7 @@ module Msgraph
     attr_accessor :token
 
     def initialize(args = {})
-      raise UserError.new("Does not exist access token.") unless args.key?(:token)
+      raise UserError.new("Does not exist ':token'.") unless args.key?(:token)
       @token = args[:token]
     end
 
@@ -34,8 +34,30 @@ module Msgraph
         }
       }
     end
+    alias_method :users, :list
 
-    def get
+    def get(args = {})
+      raise UserError.new("Does not exist ':id' or ':user_principal_name'.") unless args.key?(:id) || args.key?(:user_principal_name)
+      id = args[:id] || args[:user_principal_name]
+      client = HTTPClient.new
+      query = {}
+      response = client.get("#{Msgraph::BASE_URL}/v1.0/users/#{id}", query, header)
+      raise UserError.new("#{response.message}") unless response.code == 200
+      body = JSON.parse(response.body)
+
+      #puts "body['@odata.context'] => #{body['@odata.context']}"
+      return { id:                  user['id'],
+               user_principal_name: user['userPrincipalName'],
+               display_name:        user['displayName'],
+               given_name:          user['givenName'],
+               job_title:           user['jobTitle'],
+               mail:                user['mail'],
+               mobile_phone:        user['mobilePhone'],
+               business_phones:     user['businessPhones'].inspect,
+               office_location:     user['officeLocation'],
+               preferred_language:  user['preferredLanguage'],
+               surname:             user['surname'],
+      }
     end
 
     def create
