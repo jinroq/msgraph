@@ -1,6 +1,6 @@
 require 'msgraph/version'
-require 'msgraph/token'
 require 'msgraph/user'
+require 'access_token/entity'
 
 require 'httpclient'
 require 'json'
@@ -15,7 +15,7 @@ module Msgraph
     client_secret = args[:client_secret]
     tenant_id = args[:tenant_id] || args[:directory_id]
 
-    token = Msgraph::Token.new(
+    token = AccessToken::Entity.new(
       { client_id: client_id,
         client_secret: client_secret,
         tenant_id: tenant_id }

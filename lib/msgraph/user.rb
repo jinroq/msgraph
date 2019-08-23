@@ -46,17 +46,17 @@ module Msgraph
       body = JSON.parse(response.body)
 
       #puts "body['@odata.context'] => #{body['@odata.context']}"
-      return { id:                  user['id'],
-               user_principal_name: user['userPrincipalName'],
-               display_name:        user['displayName'],
-               given_name:          user['givenName'],
-               job_title:           user['jobTitle'],
-               mail:                user['mail'],
-               mobile_phone:        user['mobilePhone'],
-               business_phones:     user['businessPhones'].inspect,
-               office_location:     user['officeLocation'],
-               preferred_language:  user['preferredLanguage'],
-               surname:             user['surname'],
+      return { id:                  body['id'],
+               user_principal_name: body['userPrincipalName'],
+               display_name:        body['displayName'],
+               given_name:          body['givenName'],
+               job_title:           body['jobTitle'],
+               mail:                body['mail'],
+               mobile_phone:        body['mobilePhone'],
+               business_phones:     body['businessPhones'].inspect,
+               office_location:     body['officeLocation'],
+               preferred_language:  body['preferredLanguage'],
+               surname:             body['surname'],
       }
     end
 
