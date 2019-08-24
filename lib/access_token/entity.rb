@@ -1,5 +1,6 @@
 module AccessToken
   require 'httpclient'
+  require 'json'
 
   class Entity
     BASE_URL           = 'https://login.microsoftonline.com'.freeze
@@ -56,7 +57,7 @@ module AccessToken
           multipart: true,
         }
       )
-      raise EntityError.new("#{response.message}") unless response.code == 200
+      raise EntityError.new(response.inspect) unless response.code == 200
 
       return JSON.parse(response.body)
     end
