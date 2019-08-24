@@ -42,10 +42,17 @@ module Msgraph
       client = HTTPClient.new
       query = {}
       response = client.get("#{Msgraph::BASE_URL}/v1.0/users/#{id}", query, header)
-      raise UserError.new(response.inspect) unless response.code == 200
-      body = JSON.parse(response.body)
+      case response.code
+      when 200
+        #puts "body['@odata.context'] => #{body['@odata.context']}"
+        body = JSON.parse(response.body)
+      when 202
+        # when the request has been processed successfully
+        # but the server requires more time to complete related background operations.
+      else
+        raise UserError.new(response.inspect)
+      end
 
-      #puts "body['@odata.context'] => #{body['@odata.context']}"
       return { id:                  body['id'],
                user_principal_name: body['userPrincipalName'],
                display_name:        body['displayName'],
