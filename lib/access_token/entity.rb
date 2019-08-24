@@ -4,10 +4,11 @@ module AccessToken
   class Entity
     BASE_URL           = 'https://login.microsoftonline.com'.freeze
     REQUEST_PATH       = 'oauth2/v2.0/token'.freeze
-    DEFAULT_SCOPE      = "#{Msgraph::BASE_URL}/.default"
+    DEFAULT_SCOPE      = 'https://graph.microsoft.com/.default'
     DEFAULT_GRANT_TYPE = 'client_credentials'.freeze
 
     attr_accessor :client_id, :client_secret, :tenant_id
+    attr_accessor :grant_type
 
     def initialize(args = {})
       raise EntityError.new("Does not exist Client ID or Application ID") unless args.key?(:client_id) || args.key?(:application_id)
@@ -18,6 +19,8 @@ module AccessToken
 
       raise EntityError.new("Does not exist Tenant ID or Directory ID") unless args.key?(:tenant_id) || args.key?(:directory_id)
       @tenant_id = args[:tenant_id] || args[:directory_id]
+
+      @grant_type = args[:grant_type]
     end
 
     def access_token
@@ -47,7 +50,7 @@ module AccessToken
             client_id: client_id,
             client_secret: client_secret,
             scope: DEFAULT_SCOPE,
-            grant_type: args[:grant_type] || DEFAULT_GRANT_TYPE,
+            grant_type: grant_type || DEFAULT_GRANT_TYPE,
           },
           'Content-Type' => 'application/json',
           multipart: true,
