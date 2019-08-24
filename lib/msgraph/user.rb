@@ -14,7 +14,7 @@ module Msgraph
       client = HTTPClient.new
       query = {}
       response = client.get("#{Msgraph::BASE_URL}/v1.0/users/", query, header)
-      raise UserError.new("#{response.message}") unless response.code == 200
+      raise UserError.new(response.inspect) unless response.code == 200
       body = JSON.parse(response.body)
 
       #puts "body['@odata.context'] => #{body['@odata.context']}"
@@ -42,7 +42,7 @@ module Msgraph
       client = HTTPClient.new
       query = {}
       response = client.get("#{Msgraph::BASE_URL}/v1.0/users/#{id}", query, header)
-      raise UserError.new("#{response.message}") unless response.code == 200
+      raise UserError.new(response.inspect) unless response.code == 200
       body = JSON.parse(response.body)
 
       #puts "body['@odata.context'] => #{body['@odata.context']}"
