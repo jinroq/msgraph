@@ -2,8 +2,10 @@ module AccessToken
   require 'httpclient'
 
   class Entity
-    BASE_URL     = 'https://login.microsoftonline.com'.freeze
-    REQUEST_PATH = 'oauth2/v2.0/token'.freeze
+    BASE_URL           = 'https://login.microsoftonline.com'.freeze
+    REQUEST_PATH       = 'oauth2/v2.0/token'.freeze
+    DEFAULT_SCOPE      = "#{Msgraph::BASE_URL}/.default"
+    DEFAULT_GRANT_TYPE = 'client_credentials'.freeze
 
     attr_accessor :client_id, :client_secret, :tenant_id
 
@@ -44,8 +46,8 @@ module AccessToken
           body: {
             client_id: client_id,
             client_secret: client_secret,
-            scope: "#{Msgraph::BASE_URL}/.default",
-            grant_type: 'client_credentials',
+            scope: DEFAULT_SCOPE,
+            grant_type: args[:grant_type] || DEFAULT_GRANT_TYPE,
           },
           'Content-Type' => 'application/json',
           multipart: true,
