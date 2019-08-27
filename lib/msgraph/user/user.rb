@@ -19,12 +19,9 @@ module Msgraph
       end
 
       def list
+        query = {}
         # $select parameter
-        if @select.size == 0
-          query = {}
-        else
-          query = '$select=' + @select.join(',')
-        end
+        query.merge!({ '$select' => @select.join(',') }) if @select.size > 0
 
         client = HTTPClient.new
         response = client.get("#{Msgraph::BASE_URL}/v1.0/users/", query, header)
