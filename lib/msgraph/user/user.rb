@@ -5,16 +5,37 @@ module Msgraph
       def initialize(args = {})
         raise UserError.new("Does not exist ':token'.") unless args.key?(:token)
         @token = args[:token]
+
+        @count   = args[:count]   || []
+        @expand  = args[:expand]  || []
+        @filter  = args[:filter]  || []
+        @format  = args[:format]  || []
+        @orderby = args[:orderby] || []
+        @search  = args[:search]  || []
+        @select  = args[:select]  || []
+        @skip    = args[:skip]    || []
+
+        @skip_token = args[:skip_token] || []
       end
 
       def list
-        client = HTTPClient.new
-        query = {}
-        response = client.get("#{Msgraph::BASE_URL}/v1.0/users/", query, header)
-        raise UserError.new(response.inspect) unless response.code == 200
-        body = JSON.parse(response.body)
+        # $select parameter
+        if @select.size == 0
+          query = {}
+        else
+          query = '$select=' + @select.join(',')
+        end
 
-        #puts "body['@odata.context'] => #{body['@odata.context']}"
+        client = HTTPClient.new
+        response = client.get("#{Msgraph::BASE_URL}/v1.0/users/", query, header)
+        case response.code
+        when 200
+          #puts "body['@odata.context'] => #{body['@odata.context']}"
+          body = JSON.parse(response.body)
+        else
+          raise UserError.new(response.inspect)
+        end
+
         users = body['value']
         return users.map { |user|
           { id:                  user['id'],
