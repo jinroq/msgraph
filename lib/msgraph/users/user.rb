@@ -1,5 +1,5 @@
 module Msgraph
-  module User
+  module Users
     class User < Base
 
       def initialize(args = {})

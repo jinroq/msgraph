@@ -1,5 +1,5 @@
 module Msgraph
-  module User
+  module Users
     require 'httpclient'
 
     require 'msgraph/properties'
