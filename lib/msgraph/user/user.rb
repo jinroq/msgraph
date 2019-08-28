@@ -6,7 +6,7 @@ module Msgraph
         raise UserError.new("Does not exist ':token'.") unless args.key?(:token)
         @token = args[:token]
 
-        @count   = args[:count]   || []
+        @count   = args[:count]   || false # unsupport
         @expand  = args[:expand]  || []
         @filter  = args[:filter]  || []
         @format  = args[:format]  || []
@@ -21,35 +21,39 @@ module Msgraph
       def list
         query = {}
         # $select parameter
-        query.merge!({ '$select' => @select.join(',') }) if @select.size > 0
+        #query.merge!({ '$select' => @select.join(',') }) if @select.size > 0
+        if @select.size > 0
+          query.merge!({ '$select' => @select.map { |key_name|
+                           if key_name.is_a?(Symbol)
+                             Msgraph::Properties.snake_case_to_camel_case(key_name.to_s)
+                           elsif key_name.is_a?(String)
+                             key_name
+                           else
+                             raise UserError.new("'#{key_name}' is invalid value.")
+                           end
+                         }.join(',') })
+        end
 
         client = HTTPClient.new
         response = client.get("#{Msgraph::BASE_URL}/v1.0/users/", query, header)
         case response.code
         when 200
-          #puts "body['@odata.context'] => #{body['@odata.context']}"
           body = JSON.parse(response.body)
         else
           raise UserError.new(response.inspect)
         end
 
         users = body['value']
-        return users.map { |user|
-          { id:                  user['id'],
-            user_principal_name: user['userPrincipalName'],
-            display_name:        user['displayName'],
-            given_name:          user['givenName'],
-            job_title:           user['jobTitle'],
-            mail:                user['mail'],
-            mobile_phone:        user['mobilePhone'],
-            business_phones:     user['businessPhones'].inspect,
-            office_location:     user['officeLocation'],
-            preferred_language:  user['preferredLanguage'],
-            surname:             user['surname'],
-          }
-        }
+
+        return users.map do |user|
+          result = Msgraph::Properties::USER_PROPERTIES.inject({}) do |element, property|
+            element.merge!({ Msgraph::Properties.camel_case_to_snake_case(property).to_sym => user[property] }) unless user[property].nil?
+            element
+          end
+          result[:odata_context] = body['@odata.context']
+          result
+        end
       end
-      alias_method :users, :list
 
       def get(args = {})
         raise UserError.new("Does not exist ':id' or ':user_principal_name'.") unless args.key?(:id) || args.key?(:user_principal_name)
