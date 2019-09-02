@@ -25,7 +25,7 @@ module Msgraph
         if @select.size > 0
           query.merge!({ '$select' => @select.map { |key_name|
                            if key_name.is_a?(Symbol)
-                             self.snake_case_to_camel_case(key_name.to_s)
+                             self.class.snake_case_to_camel_case(key_name.to_s)
                            elsif key_name.is_a?(String)
                              key_name
                            else
@@ -47,7 +47,7 @@ module Msgraph
 
         return users.map do |user|
           result = Msgraph::Properties::USER_PROPERTIES.inject({}) do |element, property|
-            element.merge!({ self.camel_case_to_snake_case(property).to_sym => user[property] }) unless user[property].nil?
+            element.merge!({ self.class.camel_case_to_snake_case(property).to_sym => user[property] }) unless user[property].nil?
             element
           end
           result[:odata_context] = body['@odata.context']
