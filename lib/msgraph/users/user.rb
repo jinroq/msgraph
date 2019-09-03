@@ -35,7 +35,7 @@ module Msgraph
         end
 
         client = HTTPClient.new
-        response = client.get("#{Msgraph::BASE_URL}/v1.0/users/", query, header)
+        response = client.get("#{Msgraph::MSGRAPH_API_ENDPOINT}/v1.0/users/", query, header)
         case response.code
         when 200
           body = JSON.parse(response.body)
@@ -60,7 +60,7 @@ module Msgraph
         id = args[:id] || args[:user_principal_name]
         client = HTTPClient.new
         query = {}
-        response = client.get("#{Msgraph::BASE_URL}/v1.0/users/#{id}", query, header)
+        response = client.get("#{Msgraph::MSGRAPH_API_ENDPOINT}/v1.0/users/#{id}", query, header)
         case response.code
         when 200
           #puts "body['@odata.context'] => #{body['@odata.context']}"

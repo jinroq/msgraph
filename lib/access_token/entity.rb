@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 module AccessToken
   require 'httpclient'
   require 'json'
 
   class Entity
-    BASE_URL           = 'https://login.microsoftonline.com'.freeze
-    REQUEST_PATH       = 'oauth2/v2.0/token'.freeze
+    BASE_URL           = 'https://login.microsoftonline.com'
+    OAUTH2_TOKEN_PATH  = 'oauth2/v2.0/token'
     DEFAULT_SCOPE      = 'https://graph.microsoft.com/.default'
-    DEFAULT_GRANT_TYPE = 'client_credentials'.freeze
+    DEFAULT_GRANT_TYPE = 'client_credentials'
 
     attr_accessor :client_id, :client_secret, :tenant_id
     attr_accessor :grant_type
@@ -45,7 +47,7 @@ module AccessToken
     def body
       client = HTTPClient.new
       response = client.post(
-        "#{BASE_URL}/#{tenant_id}/#{REQUEST_PATH}",
+        "#{BASE_URL}/#{tenant_id}/#{OAUTH2_TOKEN_PATH}",
         {
           body: {
             client_id: client_id,
