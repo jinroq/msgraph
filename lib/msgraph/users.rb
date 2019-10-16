@@ -37,16 +37,108 @@ class Msgraph::Users < Msgraph::Base
   # POST /users
   #  Create a new user.
   def create(options = {})
+    query = {}
+
+    raise Msgraph::UsersError.new('Required parameter `password_profile`') if options[:password_profile].nil?
+    password_profile = {
+      'forceChangePasswordNextSignIn'        => options[:password_profile][:force_change_password_next_sign_in] || false,
+      'forceChangePasswordNextSignInWithMfa' => options[:password_profile][:force_change_password_next_sign_in_with_mfa] || false,
+      'password'                             => options[:password_profile][:password],
+    }
+
+    raise Msgraph::UsersError.new('Required parameter `body`') if options[:body].nil?
+    request_body = {
+      'accountEnabled'        => options[:body][:account_enabled] || true,
+      'displayName'           => options[:body][:display_name],
+      'onPremisesImmutableId' => options[:body][:on_premises_immutable_id],
+      'mailNickname'          => options[:body][:mail_nick_name],
+      'passwordProfile'       => password_profile,
+      'userPrincipalName'     => options[:body][:user_principal_name],
+    }
+
+    client = HTTPClient.new
+    response = client.post("#{@base_url}",
+                           query: query,
+                           body:  request_body ,
+                           hader: _header
+                          )
+
+    case response.code
+    when 201
+      response_body = JSON.parse(response.body)
+    else
+      raise Msgraph::UsersError.new(response.inspect)
+    end
+
+    user = response_body['value']
+
+    return { id:                  response_body['id'],
+             user_principal_name: response_body['userPrincipalName'],
+             display_name:        response_body['displayName'],
+             given_name:          response_body['givenName'],
+             job_title:           response_body['jobTitle'],
+             mail:                response_body['mail'],
+             mobile_phone:        response_body['mobilePhone'],
+             business_phones:     response_body['businessPhones'].inspect,
+             office_location:     response_body['officeLocation'],
+             preferred_language:  response_body['preferredLanguage'],
+             surname:             response_body['surname'],
+    }
   end
 
   # PATCH /users/{id | userPrincipalName}
   #   Update the properties of a user.
   def update(id, options = {})
+    raise Msgraph::UsersError.new('Required argument `id`.') if id.nil?
+
+    query = {}
+    request_body = {}
+    raise Msgraph::UsersError.new('Required parameter `password_profile`') if options[:body].nil?
+    unless options[:body][:birthday].nil?
+      birthday = DateTime.parse(options[:body][:birthday])
+      request_body['birthday'] = birthday
+    end
+
+
+    request_body['aboutMe'] = options[:body][:about_me] unless options[:body][:about_me].nil?
+    request_body['accountEnabled'] = options[:body][:account_enabled] unless options[:body][:account_enabled].nil?
+    request_body['businessPhones'] = options[:body][:business_phones] unless options[:body][:business_phones].nil?
+
+    client = HTTPClient.new
+    response = client.post("#{@base_url}",
+                           query: query,
+                           body: request_body,
+                           header: _header
+                           )
+
+    case response.code
+    when 204
+      # do nothing
+    else
+      raise Msgraph::UsersError.new(response.inspect)
+    end
+
+    return true
   end
 
   # DELETE /users/{id | userPrincipalName}
   #   Delete user.
   def delete(id, options = {})
+    raise Msgraph::UsersError.new('Required argument `id`.') if id.nil?
+    query = {}
+    header = { 'Authorization' => "Bearer #{@token}" }
+
+    client = HTTPClient.new
+    response = client.post("#{@base_url}/{id}", query: query, header: header)
+
+    case response.code
+    when 204
+      # do nothing
+    else
+      raise Msgraph::UsersError.new(response.inspect)
+    end
+
+    return true
   end
 
   # GET /users/delta
@@ -106,6 +198,8 @@ class Msgraph::Users < Msgraph::Base
     when 202
       # when the request has been processed successfully
       # but the server requires more time to complete related background operations.
+
+      # not implement
     else
       raise Msgraph::UsersError.new(response.inspect)
     end
