@@ -46,21 +46,21 @@ class Msgraph::Users < Msgraph::Base
       'password'                             => options[:password_profile][:password],
     }
 
-    raise Msgraph::UsersError.new('Required parameter `body`') if options[:body].nil?
+    raise Msgraph::UsersError.new('Required parameter `body`') if options.keys.size == 0
     request_body = {
-      'accountEnabled'        => options[:body][:account_enabled] || true,
-      'displayName'           => options[:body][:display_name],
-      'onPremisesImmutableId' => options[:body][:on_premises_immutable_id],
-      'mailNickname'          => options[:body][:mail_nick_name],
+      'accountEnabled'        => options[:account_enabled] || true,
+      'displayName'           => options[:display_name],
+      'onPremisesImmutableId' => options[:on_premises_immutable_id],
+      'mailNickname'          => options[:mail_nick_name],
       'passwordProfile'       => password_profile,
-      'userPrincipalName'     => options[:body][:user_principal_name],
+      'userPrincipalName'     => options[:user_principal_name],
     }
 
     client = HTTPClient.new
     response = client.post("#{@base_url}",
-                           query: query,
-                           body:  request_body ,
-                           hader: _header
+                           query:  query,
+                           body:   request_body.to_json,
+                           header: _header
                           )
 
     case response.code
@@ -93,23 +93,25 @@ class Msgraph::Users < Msgraph::Base
 
     query = {}
     request_body = {}
-    raise Msgraph::UsersError.new('Required parameter `password_profile`') if options[:body].nil?
-    unless options[:body][:birthday].nil?
-      birthday = DateTime.parse(options[:body][:birthday])
+    raise Msgraph::UsersError.new('Required parameter `password_profile`') if options.keys.size == 0
+    unless options[:birthday].nil?
+      birthday = DateTime.parse(options[:birthday])
       request_body['birthday'] = birthday
     end
 
+    # required
+    request_body['displayName'] = options[:display_name] unless options[:display_name].nil?
 
-    request_body['aboutMe'] = options[:body][:about_me] unless options[:body][:about_me].nil?
-    request_body['accountEnabled'] = options[:body][:account_enabled] unless options[:body][:account_enabled].nil?
-    request_body['businessPhones'] = options[:body][:business_phones] unless options[:body][:business_phones].nil?
+    request_body['aboutMe'] = options[:about_me] unless options[:about_me].nil?
+    request_body['accountEnabled'] = options[:account_enabled] unless options[:account_enabled].nil?
+    request_body['businessPhones'] = options[:business_phones] unless options[:business_phones].nil? && options[:business_phones].size > 0
 
     client = HTTPClient.new
     response = client.post("#{@base_url}",
-                           query: query,
-                           body: request_body,
+                           query:  query,
+                           body:   request_body.to_json,
                            header: _header
-                           )
+                          )
 
     case response.code
     when 204
@@ -167,7 +169,7 @@ class Msgraph::Users < Msgraph::Base
     end
 
     client = HTTPClient.new
-    response = client.get("#{@base_url}", query, _header)
+    response = client.get("#{@base_url}", query: query, header: _header)
     case response.code
     when 200
       body = JSON.parse(response.body)
@@ -191,7 +193,7 @@ class Msgraph::Users < Msgraph::Base
   def _get(id, options)
     client = HTTPClient.new
     query = {}
-    response = client.get("#{@base_url}/#{id}", query, _header)
+    response = client.get("#{@base_url}/#{id}", query: query, header: _header)
     case response.code
     when 200
       body = JSON.parse(response.body)
