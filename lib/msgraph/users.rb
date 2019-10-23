@@ -155,9 +155,8 @@ class Msgraph::Users < Msgraph::Base
   def _list(options)
     query = {}
     # $select parameter
-    #query.merge!({ '$select' => @select.join(',') }) if @select.size > 0
-    if @select.size > 0
-      query.merge!({ '$select' => @select.map { |key_name|
+    if options.has_key?(:select)
+      query.merge!({ '$select' => options[:select].map { |key_name|
                        if key_name.is_a?(Symbol)
                          self.class.snake_case_to_camel_case(key_name.to_s)
                        elsif key_name.is_a?(String)
@@ -174,7 +173,7 @@ class Msgraph::Users < Msgraph::Base
     when 200
       body = JSON.parse(response.body)
     else
-      raise Msgraph::Users::UserError.new(response.inspect)
+      raise Msgraph::UsersError.new(response.inspect)
     end
 
     users = body['value']

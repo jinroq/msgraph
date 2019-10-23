@@ -14,7 +14,6 @@ class Msgraph
     else
       @api_ver = Config::API_VERSION_1
     end
-    @options = options
     @msgraph_api_endpoint = Config::MSGRAPH_API_ENDPOINT
   end
 
@@ -22,8 +21,7 @@ class Msgraph
     Msgraph::Users.new(
       @token,
       @msgraph_api_endpoint,
-      @api_ver,
-      @options
+      @api_ver
     )
   end
 
