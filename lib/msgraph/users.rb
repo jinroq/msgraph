@@ -153,19 +153,7 @@ class Msgraph::Users < Msgraph::Base
 
   # GET /users
   def _list(options)
-    query = {}
-    # $select parameter
-    if options.has_key?(:select)
-      query.merge!({ '$select' => options[:select].map { |key_name|
-                       if key_name.is_a?(Symbol)
-                         self.class.snake_case_to_camel_case(key_name.to_s)
-                       elsif key_name.is_a?(String)
-                         key_name
-                       else
-                         raise Msgraph::UsersError.new("'#{key_name}' is invalid value.")
-                       end
-                     }.join(',') })
-    end
+    query = _query(options)
 
     client = HTTPClient.new
     response = client.get("#{@base_url}", query: query, header: _header)
@@ -191,7 +179,7 @@ class Msgraph::Users < Msgraph::Base
   # GET /users/{id | userPrincipalName}
   def _get(id, options)
     client = HTTPClient.new
-    query = {}
+    query = _query(options)
     response = client.get("#{@base_url}/#{id}", query: query, header: _header)
     case response.code
     when 200
@@ -226,6 +214,25 @@ class Msgraph::Users < Msgraph::Base
   end
 
   def _body
+  end
+
+  def _query(odata_params = {})
+    query = {}
+
+    # $select
+    if odata_params.has_key?(:select)
+      query.merge!({ '$select' => odata_params[:select].map { |key_name|
+                       if key_name.is_a?(Symbol)
+                         self.class.snake_case_to_camel_case(key_name.to_s)
+                       elsif key_name.is_a?(String)
+                         key_name
+                       else
+                         raise Msgraph::UsersError.new("'#{key_name}' is invalid value.")
+                       end
+                     }.join(',') })
+    end
+
+    return query
   end
 
 end
