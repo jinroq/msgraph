@@ -3,35 +3,31 @@ require 'msgraph/version'
 require 'access_token/entity'
 
 require 'msgraph/config'
-require 'msgraph/users'
+require 'msgraph/odata'
+require 'msgraph/class_builder'
 
 class Msgraph
-  def initialize(token = nil, options = {})
+  attr_reader :dispatcher
+
+  def initialize(token = nil, **args)
     raise "Does not exist 'token' argument." unless token
-    @token = token
-    if options.key?(:api_ver)
-      @api_ver = options.delete(:api_ver)
-    else
-      @api_ver = Config::API_VERSION_1
-    end
-    @msgraph_api_endpoint = Config::MSGRAPH_API_ENDPOINT
-  end
+    api_ver = args[:api_ver] || Config::API_VERSION_1
+    context_url = "#{Config::MSGRAPH_API_ENDPOINT}/#{api_ver}/"
+    metadata_filepath = args[:metadata_filepath]
 
-  def users
-    Msgraph::Users.new(
-      @token,
-      @msgraph_api_endpoint,
-      @api_ver
+    @dispatcher = Odata::Dispatcher.new(
+      token: token,
+      context_url: context_url,
+      metadata_filepath: metadata_filepath
     )
-  end
 
-  def groups
-  end
+    # 
+    @association_collections = {}
 
-  def calendars
-  end
-
-  def mail
+    builder = MicrosoftGraph::ClassBuilder.new
+    unless builder.loaded?
+      MicrosoftGraph::ClassBuilder.load!(@dispatcher)
+    end
   end
 
 end
