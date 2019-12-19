@@ -4,10 +4,11 @@ require 'access_token/entity'
 
 require 'msgraph/config'
 require 'msgraph/odata'
+require 'msgraph/base'
+require 'msgraph/base_entity'
 require 'msgraph/class_builder'
 
 class Msgraph
-  attr_reader :dispatcher
 
   def initialize(token = nil, **args)
     raise "Does not exist 'token' argument." unless token
@@ -24,10 +25,14 @@ class Msgraph
     # 
     @association_collections = {}
 
-    builder = MicrosoftGraph::ClassBuilder.new
-    unless builder.loaded?
-      MicrosoftGraph::ClassBuilder.load!(@dispatcher)
+    @class_builder = MicrosoftGraph::ClassBuilder.new
+    unless class_loaded?
+      @class_builder.load(@dispatcher)
     end
+  end
+
+  def class_loaded?
+    @class_builder.loaded?
   end
 
 end

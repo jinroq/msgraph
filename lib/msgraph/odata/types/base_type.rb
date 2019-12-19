@@ -1,7 +1,6 @@
 class Msgraph
   module Odata
     module Types
-      # Base class for Types
       class BaseType
         # Name attribute of Type
         attr_reader :name

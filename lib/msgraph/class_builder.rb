@@ -3,36 +3,39 @@ class MicrosoftGraph
 
     def initialize
       @loaded = false
+      @dispatcher_namespace = nil
     end
 
-    def self.load!(dispatcher)
+    # 
+    def load(dispatcher)
       if !loaded?
         # Schema attribute's namespace
         @dispatcher_namespace = dispatcher.schema_namespace
 
         # 
         dispatcher.entity_types.each do |entity_type|
-          create_class! entity_type
+          create_class(entity_type)
         end
 
+=begin
         #
         dispatcher.complex_types.each do |complex_type|
-          create_class! complex_type
+          create_class(complex_type)
         end
 
         # 
         dispatcher.entity_sets.each do |entity_set|
-          add_graph_association! entity_set
+          add_graph_association(entity_set)
         end
 
         # 
         dispatcher.actions.each do |action|
-          add_action_method! action
+          add_action_method(action)
         end
 
         # 
         dispatcher.functions.each do |function|
-          add_function_method! function
+          add_function_method(function)
         end
 
         # 
@@ -63,6 +66,7 @@ class MicrosoftGraph
               }.to_h
           end
         end
+=end
 
         @loaded = true
       end
@@ -74,15 +78,64 @@ class MicrosoftGraph
 
     private
 
+    # Create class.
+    #
+    # @param type [Msgraph::Odata::Types::EntityType]
+    def create_class(type)
+      superklass = get_superklass(type)
+      klass = MicrosoftGraph.const_set(classify(type.name), Class.new(superklass))
+      klass.const_set("ODATA_TYPE", type)
+
+      klass.instance_eval do
+        def self.odata_type
+          const_get("ODATA_TYPE")
+        end
+      end
+
+      create_properties(klass, type)
+      create_navigation_properties(klass, type) if type.respond_to?(:navigation_properties)
+    end
+
+    # humm...
+    def get_superklass(type)
+      if type.base_type.nil?
+        (type.class == Msgraph::Odata::Types::ComplexType) ?
+          Msgraph::Base :
+          Msgraph::BaseEntity
+      else
+        Object.const_get("Msgraph::" + classify(type.base_type))
+      end
+    end
+
+    # 
+    def classify(name)
+      raw_name = name.gsub("#{@dispatcher_namespace}.", "")
+      raw_name.to_s.slice(0, 1).capitalize + raw_name.to_s.slice(1..-1)
+    end
+
+    def create_properties(klass, type)
+      property_map = type.properties.map { |property|
+        puts "[#{self.class.name}] - [#{__method__}] klass1 => #{klass}"
+        puts "[#{self.class.name}] - [#{__method__}] property1 => #{property.inspect}"
+        define_getter_and_setter(klass, property)
+        [ OData.convert_to_snake_case(property.name).to_sym,
+          property
+        ]
+      }.to_h
+
+      klass.class_eval do
+        define_method(:properties) do
+          super().merge(property_map)
+        end
+      end
+    end
+
     def remove_dispatcher_namespace(name)
       name.gsub("#{@dispatcher_namespace}.", "")
     end
 
-    def self.create_class!(type)
-    end
-
     # 
-    def self.add_graph_association!(entity_set)
+    def self.add_graph_association(entity_set)
       klass = get_namespaced_class(entity_set.member_type)
       resource_name = entity_set.name.gsub("#{@dispatcher_namespace}.", "")
       odata_collection =
@@ -194,11 +247,6 @@ class MicrosoftGraph
       end
     end
 
-    def self.classify(name)
-      raw_name = name.gsub("#{@dispatcher_namespace}.", "")
-      raw_name.to_s.slice(0, 1).capitalize + raw_name.to_s.slice(1..-1)
-    end
-
     def self.get_namespaced_class(property_name)
       klass_name = classify(property_name)
       klass      = begin
@@ -207,16 +255,6 @@ class MicrosoftGraph
         return false
       end
       klass && MicrosoftGraph::BaseEntity != klass.superclass && klass
-    end
-
-    def self.get_superklass(type)
-      if type.base_type.nil?
-        (type.class == OData::ComplexType) ?
-          MicrosoftGraph::Base :
-          MicrosoftGraph::BaseEntity
-      else
-        Object.const_get("MicrosoftGraph::" + classify(type.base_type))
-      end
     end
   end
 end
