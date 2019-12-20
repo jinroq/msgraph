@@ -3,6 +3,7 @@ require 'msgraph/version'
 require 'access_token/entity'
 
 require 'msgraph/config'
+require 'msgraph/utils'
 require 'msgraph/odata'
 require 'msgraph/base'
 require 'msgraph/base_entity'
@@ -25,7 +26,7 @@ class Msgraph
     # 
     @association_collections = {}
 
-    @class_builder = MicrosoftGraph::ClassBuilder.new
+    @class_builder = Msgraph::ClassBuilder.new
     unless class_loaded?
       @class_builder.load(@dispatcher)
     end

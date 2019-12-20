@@ -1,22 +1,22 @@
 # frozen_string_literal: true
-#class Msgraph::Base
 class Msgraph
   class Base
-  def initialize(options = {})
+  def initialize(**args)
     @cached_navigation_property_values = {}
     @cached_property_values            = {}
-    if options[:attributes]
-      initialize_serialized_properties(options[:attributes], options[:persisted])
+    if args[:attributes]
+      initialize_serialized_properties(args[:attributes], args[:persisted])
     end
-    @dirty = ! options[:persisted]
-    @dirty_properties = if @dirty
-                          @cached_property_values.keys.inject({}) do |result, key|
-                            result[key] = true
-                            result
-                          end
-                        else
-                          {}
-                        end
+    @dirty = !args[:persisted]
+    @dirty_properties =
+      if @dirty
+        @cached_property_values.keys.inject({}) do |result, key|
+          result[key] = true
+          result
+        end
+      else
+        {}
+      end
   end
 
   def properties
@@ -27,22 +27,22 @@ class Msgraph
     self.class.const_get("ODATA_TYPE").name
   end
 
-  def as_json(options = {})
-    (if options[:only]
-     @cached_property_values.select { |key,v| options[:only].include? key }
-    elsif options[:except]
-      @cached_property_values.reject { |key,v| options[:except].include? key }
+  def as_json(**args)
+    (if args[:only]
+     @cached_property_values.select { |key,v| args[:only].include? key }
+    elsif args[:except]
+      @cached_property_values.reject { |key,v| args[:except].include? key }
     else
       @cached_property_values
      end).inject({}) do |result, (k,v)|
-      k = OData.convert_to_camel_case(k) if options[:convert_to_camel_case]
-      result[k.to_s] = v.respond_to?(:as_json) ? v.as_json(options) : v
+      k = OData.convert_to_camel_case(k) if args[:convert_to_camel_case]
+      result[k.to_s] = v.respond_to?(:as_json) ? v.as_json(args) : v
       result
     end
   end
 
-  def to_json(options = {})
-    as_json(options).to_json
+  def to_json(**args)
+    as_json(args).to_json
   end
 
   def dirty?

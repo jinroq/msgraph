@@ -1,4 +1,4 @@
-class MicrosoftGraph
+class Msgraph
   class ClassBuilder
 
     def initialize
@@ -43,7 +43,7 @@ class MicrosoftGraph
           class_name = classify(singleton.type_name)
           MicrosoftGraph.instance_eval do
             resource_name = singleton.name
-            define_method(OData.convert_to_snake_case(resource_name)) do
+            define_method(Odata.convert_to_snake_case(resource_name)) do
               MicrosoftGraph
                 .const_get(class_name)
                 .new(
@@ -83,7 +83,7 @@ class MicrosoftGraph
     # @param type [Msgraph::Odata::Types::EntityType]
     def create_class(type)
       superklass = get_superklass(type)
-      klass = MicrosoftGraph.const_set(classify(type.name), Class.new(superklass))
+      klass = Misgraph.const_set(classify(type.name), Class.new(superklass))
       klass.const_set("ODATA_TYPE", type)
 
       klass.instance_eval do
@@ -118,7 +118,7 @@ class MicrosoftGraph
         puts "[#{self.class.name}] - [#{__method__}] klass1 => #{klass}"
         puts "[#{self.class.name}] - [#{__method__}] property1 => #{property.inspect}"
         define_getter_and_setter(klass, property)
-        [ OData.convert_to_snake_case(property.name).to_sym,
+        [ Odata.convert_to_snake_case(property.name).to_sym,
           property
         ]
       }.to_h
@@ -139,10 +139,10 @@ class MicrosoftGraph
       klass = get_namespaced_class(entity_set.member_type)
       resource_name = entity_set.name.gsub("#{@dispatcher_namespace}.", "")
       odata_collection =
-        OData::CollectionType.new(member_type: klass.odata_type, name: entity_set.name)
-      MicrosoftGraph.send(:define_method, resource_name) do
+        Odata::CollectionType.new(member_type: klass.odata_type, name: entity_set.name)
+      Msgraph.send(:define_method, resource_name) do
         @association_collections[entity_set.name] ||=
-          MicrosoftGraph::CollectionAssociation
+          Msgraph::CollectionAssociation
             .new(
               type:          odata_collection,
               resource_name: resource_name,
@@ -159,7 +159,7 @@ class MicrosoftGraph
       property_map = type.properties.map { |property|
         define_getter_and_setter(klass, property)
         [
-          OData.convert_to_snake_case(property.name).to_sym,
+          Odata.convert_to_snake_case(property.name).to_sym,
           property
         ]
       }.to_h
@@ -173,7 +173,7 @@ class MicrosoftGraph
 
     def self.define_getter_and_setter(klass, property)
       klass.class_eval do
-        property_name = OData.convert_to_snake_case(property.name)
+        property_name = Odata.convert_to_snake_case(property.name)
         define_method(property_name.to_sym) do
           get(property_name.to_sym)
         end
@@ -186,7 +186,7 @@ class MicrosoftGraph
     def self.create_navigation_properties(klass, type)
       klass.class_eval do
         type.navigation_properties.each do |navigation_property|
-          navigation_property_name = OData.convert_to_snake_case(navigation_property.name).to_sym
+          navigation_property_name = Odata.convert_to_snake_case(navigation_property.name).to_sym
           define_method(navigation_property_name.to_sym) do
             get_navigation_property(navigation_property_name.to_sym)
           end
@@ -200,7 +200,7 @@ class MicrosoftGraph
         define_method(:navigation_properties) do
           type.navigation_properties.map { |navigation_property|
             [
-              OData.convert_to_snake_case(navigation_property.name).to_sym,
+              Odata.convert_to_snake_case(navigation_property.name).to_sym,
               navigation_property
             ]
           }.to_h
@@ -211,11 +211,11 @@ class MicrosoftGraph
     def self.add_function_method!(function)
       klass = get_namespaced_class(function.binding_type.name)
       klass.class_eval do
-        define_method(OData.convert_to_snake_case(function.name).to_sym) do |params={}|
+        define_method(Odata.convert_to_snake_case(function.name).to_sym) do |params={}|
           raise NoAssociationError unless parent
           raise_no_graph_error! unless graph
           function_params = params.map do |param_key, param_value|
-            "#{OData.convert_to_camel_case(param_key)}='#{param_value}'"
+            "#{Odata.convert_to_camel_case(param_key)}='#{param_value}'"
           end
           response = graph.dispatcher.get("#{path}/microsoft.graph.#{function.name}(#{function_params.join(',')})")
           if function.return_type
@@ -232,10 +232,10 @@ class MicrosoftGraph
     def self.add_action_method!(action)
       klass = get_namespaced_class(action.binding_type.name)
       klass.class_eval do
-        define_method(OData.convert_to_snake_case(action.name).to_sym) do |args={}|
+        define_method(Odata.convert_to_snake_case(action.name).to_sym) do |args={}|
           raise NoAssociationError unless parent
           raise_no_graph_error! unless graph
-          response = graph.dispatcher.post("#{path}/#{action.name}", OData.convert_keys_to_camel_case(args).to_json)
+          response = graph.dispatcher.post("#{path}/#{action.name}", Odata.convert_keys_to_camel_case(args).to_json)
           if action.return_type
             if action.return_type.collection?
               Collection.new(action.return_type, response['value'])

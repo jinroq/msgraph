@@ -22,7 +22,7 @@ class Msgraph
         @metadata = fetch_metadata(args[:metadata_filepath])
         # Populate EnumType/PrimitiveType/ComplexType/EntityType
         # from Microsoft Graph's metadata
-        populate_types_from_metadata
+        populate_types
       end
 
       # Schema attribute's namespace
@@ -66,8 +66,7 @@ class Msgraph
       def fetch_metadata(metadata_filepath = nil)
         file =
           if metadata_filepath
-            f = File.read(metadata_filepath)
-            Ox.dump(f)
+            Ox.dump(File.read(metadata_filepath))
           else
             # Fetch metadata over the Internet.
             client = HTTPClient.new
@@ -77,13 +76,13 @@ class Msgraph
       end
       
       # Populate types from metadata.
-      def populate_types_from_metadata
+      def populate_types
         populate_enum_types
         populate_primitive_types
         populate_complex_types
         populate_entity_types
 
-        #populate_entity_sets
+        populate_entity_sets
       end
 
       # Populate EnumTypes
@@ -148,7 +147,7 @@ class Msgraph
       end
 
       # Populate EntitySets
-      def entity_sets
+      def populate_entity_sets
         @entity_sets ||= metadata.locate('//EntitySet').map do |entity_set|
           Odata::EntitySet.new(
             name:        entity_set['Name'],
