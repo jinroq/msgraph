@@ -17,7 +17,6 @@ class Msgraph
           create_class(entity_type)
         end
 
-=begin
         #
         dispatcher.complex_types.each do |complex_type|
           create_class(complex_type)
@@ -41,10 +40,10 @@ class Msgraph
         # 
         dispatcher.singletons.each do |singleton|
           class_name = classify(singleton.type_name)
-          MicrosoftGraph.instance_eval do
+          Msgraph.instance_eval do
             resource_name = singleton.name
-            define_method(Odata.convert_to_snake_case(resource_name)) do
-              MicrosoftGraph
+            define_method(Utils.camel_case_to_snake_case(resource_name)) do
+              Msgraph
                 .const_get(class_name)
                 .new(
                   graph:         self,
@@ -56,7 +55,7 @@ class Msgraph
         end
 
         # 
-        MicrosoftGraph.instance_eval do
+        Msgraph.instance_eval do
           define_method(:navigation_properties) do
             dispatcher
               .entity_sets
@@ -66,7 +65,6 @@ class Msgraph
               }.to_h
           end
         end
-=end
 
         @loaded = true
       end
@@ -83,7 +81,7 @@ class Msgraph
     # @param type [Msgraph::Odata::Types::EntityType]
     def create_class(type)
       superklass = get_superklass(type)
-      klass = Misgraph.const_set(classify(type.name), Class.new(superklass))
+      klass = Msgraph.const_set(classify(type.name), Class.new(superklass))
       klass.const_set("ODATA_TYPE", type)
 
       klass.instance_eval do
@@ -113,10 +111,9 @@ class Msgraph
       raw_name.to_s.slice(0, 1).capitalize + raw_name.to_s.slice(1..-1)
     end
 
+    # 
     def create_properties(klass, type)
       property_map = type.properties.map { |property|
-        puts "[#{self.class.name}] - [#{__method__}] klass1 => #{klass}"
-        puts "[#{self.class.name}] - [#{__method__}] property1 => #{property.inspect}"
         define_getter_and_setter(klass, property)
         [ Odata.convert_to_snake_case(property.name).to_sym,
           property
@@ -130,12 +127,13 @@ class Msgraph
       end
     end
 
+    # 
     def remove_dispatcher_namespace(name)
       name.gsub("#{@dispatcher_namespace}.", "")
     end
 
     # 
-    def self.add_graph_association(entity_set)
+    def add_graph_association(entity_set)
       klass = get_namespaced_class(entity_set.member_type)
       resource_name = entity_set.name.gsub("#{@dispatcher_namespace}.", "")
       odata_collection =
@@ -155,25 +153,24 @@ class Msgraph
     end
 
     # 
-    def self.create_properties(klass, type)
+    def create_properties(klass, type)
       property_map = type.properties.map { |property|
         define_getter_and_setter(klass, property)
-        [
-          Odata.convert_to_snake_case(property.name).to_sym,
-          property
+        [ Utils.camel_case_to_snake_case(property.name).to_sym,
+          property,
         ]
       }.to_h
 
       klass.class_eval do
         define_method(:properties) do
-          super().merge(property_map)
+          super.merge(property_map)
         end
       end
     end
 
-    def self.define_getter_and_setter(klass, property)
+    def define_getter_and_setter(klass, property)
       klass.class_eval do
-        property_name = Odata.convert_to_snake_case(property.name)
+        property_name = Utils.camel_case_to_snake_case(property.name)
         define_method(property_name.to_sym) do
           get(property_name.to_sym)
         end
@@ -186,7 +183,8 @@ class Msgraph
     def self.create_navigation_properties(klass, type)
       klass.class_eval do
         type.navigation_properties.each do |navigation_property|
-          navigation_property_name = Odata.convert_to_snake_case(navigation_property.name).to_sym
+          navigation_property_name =
+            Odata.camel_case_to_snake_case(navigation_property.name).to_sym
           define_method(navigation_property_name.to_sym) do
             get_navigation_property(navigation_property_name.to_sym)
           end

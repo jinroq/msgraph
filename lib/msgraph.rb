@@ -26,7 +26,7 @@ class Msgraph
     # 
     @association_collections = {}
 
-    @class_builder = Msgraph::ClassBuilder.new
+    @class_builder = ClassBuilder.new
     unless class_loaded?
       @class_builder.load(@dispatcher)
     end
