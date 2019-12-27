@@ -35,7 +35,7 @@ class Msgraph
     else
       @cached_property_values
      end).inject({}) do |result, (k,v)|
-      k = OData.convert_to_camel_case(k) if args[:convert_to_camel_case]
+      k = Utils.snake_case_to_camel_case(k) if args[:snake_case_to_camel_case]
       result[k.to_s] = v.respond_to?(:as_json) ? v.as_json(args) : v
       result
     end
@@ -88,17 +88,17 @@ class Msgraph
     unless raw_attributes.respond_to? :keys
       raise TypeError.new("Cannot initialize #{self.class} with attributes: #{raw_attributes.inspect}")
     end
-    attributes = OData.convert_keys_to_snake_case(raw_attributes)
+    attributes = Utils.to_snake_case_keys(raw_attributes)
     properties.each do |property_key, property|
       if attributes.keys.include?(property_key.to_s)
         value = attributes[property_key.to_s]
         @cached_property_values[property_key] =
           if property.collection?
             Collection.new(property.type, value)
-          elsif klass = MicrosoftGraph::ClassBuilder.get_namespaced_class(property.type.name)
+          elsif klass = Msgraph::ClassBuilder.get_namespaced_class(property.type.name)
             klass.new(attributes: value)
           else
-            if from_server && ! property.type_match?(value) && OData::EnumType === property.type
+            if from_server && ! property.type_match?(value) && Odata::Types::EnumType === property.type
               value.to_s
             else
               property.coerce_to_type(value)

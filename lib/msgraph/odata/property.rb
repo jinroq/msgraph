@@ -14,7 +14,7 @@ class Msgraph
       end
 
       def collection?
-        OData::CollectionType === type
+        Odata::Types::CollectionType === type
       end
 
       def coerce_to_type(value)

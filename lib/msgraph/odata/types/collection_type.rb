@@ -15,11 +15,11 @@ class Msgraph
         end
 
         def primitive_type?
-          OData::PrimitiveType === member_type
+          Odata::Types::PrimitiveType === member_type
         end
 
         def enum_type?
-          OData::EnumType === member_type
+          Odata::Types::EnumType === member_type
         end
 
         def collection?

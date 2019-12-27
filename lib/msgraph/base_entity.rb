@@ -35,7 +35,7 @@ class Msgraph
   def path
     containing_navigation_property_name = nil
     owning_ancestor = parental_chain.find do |ancestor|
-      unless MicrosoftGraph::CollectionAssociation === ancestor
+      unless Msgraph::CollectionAssociation === ancestor
         containing_navigation_property = ancestor.containing_navigation_property(odata_type)
         containing_navigation_property && containing_navigation_property_name = containing_navigation_property.name
       end
@@ -76,10 +76,14 @@ class Msgraph
     raise NoAssociationError unless parent
     raise_no_graph_error! unless graph
     if persisted?
-      graph.service.patch(path, to_json(only: @dirty_properties.keys, convert_to_camel_case: true))
+      graph.service.update(path,
+                           to_json(only: @dirty_properties.keys,
+                                   snake_case_to_camel_case: true
+                                  )
+                          )
     else
       initialize_serialized_properties(
-        graph.service.post(parent.path, to_json(convert_to_camel_case: true))
+        graph.service.create(parent.path, to_json(snake_case_to_camel_case: true))
       )
       @persisted = true
     end
@@ -89,14 +93,14 @@ class Msgraph
 
   def save
     save!
-  rescue OData::HTTPError
+  rescue Odata::HTTPError
     false
   end
 
   private
 
   def raise_no_graph_error!
-    raise NoGraphError.new("#{self.class}#graph must be a MicrosoftGraph instance to make network requests.")
+    raise NoGraphError.new("#{self.class}#graph must be a Msgraph instance to make network requests.")
   end
 
   def get(property_name)
@@ -116,12 +120,12 @@ class Msgraph
         CollectionAssociation.new(
           graph: graph,
           type: navigation_properties[navigation_property_name].type,
-          resource_name: OData.convert_to_camel_case(navigation_property_name.to_s),
+          resource_name: Utils.snake_case_to_camel_case(navigation_property_name.to_s),
           parent: self
         )
     else
       @cached_navigation_property_values[navigation_property_name] ||=
-        if response = graph.service.get("#{path}/#{OData.convert_to_camel_case(navigation_property_name.to_s)}")
+        if response = graph.service.get("#{path}/#{Utils.snake_case_to_camel_case(navigation_property_name.to_s)}")
           type = graph.service.get_type_for_odata_response(response[:attributes]) || navigation_property.type
           klass = ClassBuilder.get_namespaced_class(type.name)
           k = klass.new(
@@ -131,7 +135,6 @@ class Msgraph
             persisted: true,
             navigation_property_name: navigation_property_name.to_s
           )
-          puts "response => #{response}"
           k
         else
           nil
