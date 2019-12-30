@@ -6,9 +6,9 @@ class Msgraph
       attr_reader :type_name
 
       def initialize(options = {})
-        @name      = options[:name]
-        @type_name = options[:type]
-        @service   = options[:service]
+        @name       = options[:name]
+        @type_name  = options[:type]
+        @dispatcher = options[:dispatcher]
       end
 
       def collection?
@@ -16,7 +16,7 @@ class Msgraph
       end
 
       def type
-        @service.get_type_by_name(type_name)
+        @dispatcher.get_type_by_name(type_name)
       end
     end
   end

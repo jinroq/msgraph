@@ -50,7 +50,7 @@ class Msgraph
 
   def fetch
     @persisted = true
-    initialize_serialized_properties(graph.service.get(path)[:attributes])
+    initialize_serialized_properties(graph.dispatcher.get(path)[:attributes])
   end
 
   def persisted?
@@ -60,7 +60,7 @@ class Msgraph
   def delete!
     if persisted?
       @persisted = false
-      graph.service.delete(path)
+      graph.dispatcher.delete(path)
     end
   end
 
@@ -76,14 +76,14 @@ class Msgraph
     raise NoAssociationError unless parent
     raise_no_graph_error! unless graph
     if persisted?
-      graph.service.update(path,
-                           to_json(only: @dirty_properties.keys,
-                                   snake_case_to_camel_case: true
-                                  )
-                          )
+      graph.dispatcher.update(path,
+                              to_json(only: @dirty_properties.keys,
+                                      snake_case_to_camel_case: true
+                                     )
+                             )
     else
       initialize_serialized_properties(
-        graph.service.create(parent.path, to_json(snake_case_to_camel_case: true))
+        graph.dispatcher.create(parent.path, to_json(snake_case_to_camel_case: true))
       )
       @persisted = true
     end
@@ -105,7 +105,7 @@ class Msgraph
 
   def get(property_name)
     if uncached_property?(property_name) && graph
-      initialize_serialized_properties(graph.service.get(path, property_name.to_s)[:attributes], true)
+      initialize_serialized_properties(graph.dispatcher.get(path, property_name.to_s)[:attributes], true)
       super
     else
       super
@@ -125,8 +125,8 @@ class Msgraph
         )
     else
       @cached_navigation_property_values[navigation_property_name] ||=
-        if response = graph.service.get("#{path}/#{Utils.snake_case_to_camel_case(navigation_property_name.to_s)}")
-          type = graph.service.get_type_for_odata_response(response[:attributes]) || navigation_property.type
+        if response = graph.dispatcher.get("#{path}/#{Utils.snake_case_to_camel_case(navigation_property_name.to_s)}")
+          type = graph.dispatcher.get_type_for_odata_response(response[:attributes]) || navigation_property.type
           klass = ClassBuilder.get_namespaced_class(type.name)
           k = klass.new(
             graph: graph,

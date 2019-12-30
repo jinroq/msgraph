@@ -15,7 +15,7 @@ require 'msgraph/collection_association'
 require 'msgraph/class_builder'
 
 class Msgraph
-  attr_reader :service
+  attr_reader :dispatcher
 
   def initialize(token = nil, **args)
     raise "You MUST set 'token' in the argument." unless token
@@ -23,7 +23,7 @@ class Msgraph
     context_url = "#{Config::MSGRAPH_API_ENDPOINT}/#{api_ver}/"
     metadata_filepath = args[:metadata_filepath]
 
-    @service = Odata::Dispatcher.new(
+    @dispatcher = Odata::Dispatcher.new(
       token: token,
       context_url: context_url,
       metadata_filepath: metadata_filepath,
@@ -34,7 +34,7 @@ class Msgraph
 
     @class_builder = ClassBuilder.new
     unless class_loaded?
-      @class_builder.load(service)
+      @class_builder.load(dispatcher)
     end
   end
 
