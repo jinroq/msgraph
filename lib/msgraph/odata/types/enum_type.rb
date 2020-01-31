@@ -6,7 +6,7 @@ class Msgraph
         # Member attribute array
         attr_reader :members
 
-        def initialize(**args)
+        def initialize(args = {})
           super
           @members = args[:members]
         end

@@ -5,7 +5,7 @@ class Msgraph
         # Name attribute of Type
         attr_reader :name
 
-        def initialize(**args)
+        def initialize(args = {})
           @name = args[:name]
         end
 

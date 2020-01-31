@@ -4,7 +4,7 @@ class Msgraph
       class ComplexType < BaseType
         attr_reader :base_type
 
-        def initialize(**args)
+        def initialize(args = {})
           super
           @base_type  = args[:base_type]
           @dispatcher = args[:dispatcher]

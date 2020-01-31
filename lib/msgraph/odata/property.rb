@@ -7,7 +7,7 @@ class Msgraph
       attr_reader :nullable
       attr_reader :type
 
-      def initialize(**args)
+      def initialize(args = {})
         @name     = args[:name]
         @nullable = args[:nullable]
         @type     = args[:type]

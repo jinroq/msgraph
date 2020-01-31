@@ -25,7 +25,7 @@ class Msgraph
                   :functions,
                   :singletons
 
-      def initialize(**args)
+      def initialize(args = {})
         # service root URL
         @context_url = args[:context_url]
         # token
@@ -80,7 +80,7 @@ class Msgraph
         end
       end
 
-      def request(**args)
+      def request(args = {})
         parsed_uri = URI(args[:uri])
         query = URI.decode_www_form(parsed_uri.query || '')
         parsed_uri.query = URI.encode_www_form(query)

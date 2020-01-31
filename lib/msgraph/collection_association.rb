@@ -3,7 +3,7 @@ class Msgraph
     attr_reader :type
     attr_reader :parent
 
-    def initialize(**args)
+    def initialize(args = {})
       @type            = args[:type]
       @graph           = args[:graph]
       @resource_name   = args[:resource_name]

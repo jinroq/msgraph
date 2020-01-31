@@ -5,7 +5,7 @@ class Msgraph
         attr_reader :base_type
         attr_reader :abstract
 
-        def initialize(**args)
+        def initialize(args = {})
           super
           @abstract   = args[:abstract]
           @base_type  = args[:base_type]

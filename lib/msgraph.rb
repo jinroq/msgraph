@@ -17,11 +17,11 @@ require 'msgraph/class_builder'
 class Msgraph
   attr_reader :dispatcher
 
-  def initialize(token = nil, **args)
+  def initialize(token = nil, options = {})
     raise "You MUST set 'token' in the argument." unless token
-    api_ver = args[:api_ver] || Config::API_VERSION_1
+    api_ver = options[:api_ver] || Config::API_VERSION_1
     context_url = "#{Config::MSGRAPH_API_ENDPOINT}/#{api_ver}/"
-    metadata_filepath = args[:metadata_filepath]
+    metadata_filepath = options[:metadata_filepath]
 
     @dispatcher = Odata::Dispatcher.new(
       token: token,
