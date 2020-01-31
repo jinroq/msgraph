@@ -7,7 +7,7 @@ class Msgraph
       def initialize(options = {})
         @name        = options[:name]
         @member_type = options[:member_type]
-        @service     = options[:service]
+        @dispatcher  = options[:dispatcher]
       end
 
       def collection?
@@ -15,7 +15,7 @@ class Msgraph
       end
 
       def type
-        @service.get_type_by_name("Collection(#{member_type})")
+        @dispatcher.get_type_by_name("Collection(#{member_type})")
       end
     end
   end

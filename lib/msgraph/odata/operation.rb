@@ -11,7 +11,7 @@ class Msgraph
       attr_reader :parameters
       attr_reader :return_type
 
-      def initialize(**args)
+      def initialize(args = {})
         @name            = args[:name]
         @entity_set_type = args[:entity_set_type]
         @binding_type    = args[:binding_type]

@@ -5,23 +5,23 @@ class Msgraph
         attr_reader :base_type
         attr_reader :abstract
 
-        def initialize(**args)
+        def initialize(args = {})
           super
           @abstract   = args[:abstract]
           @base_type  = args[:base_type]
           @open_type  = args[:open_type]
           @has_stream = args[:has_stream]
-          @service    = args[:service]
+          @dispatcher = args[:dispatcher]
         end
 
         # 
         def properties
-          @properties ||= @service.properties_for_type(name)
+          @properties ||= @dispatcher.properties_for_type(name)
         end
 
         # 
         def navigation_properties
-          @navigation_properties ||= @service.navigation_properties_for_type(name)
+          @navigation_properties ||= @dispatcher.navigation_properties_for_type(name)
         end
 
         def navigation_property_by_name(name)

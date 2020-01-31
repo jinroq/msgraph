@@ -15,7 +15,6 @@ require 'msgraph/odata/navigation_property'
 class Msgraph
   module Odata
     class Dispatcher
-      # @see https://docs.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/odata#odata-services
       attr_reader :context_url
       attr_reader :metadata
 
@@ -26,7 +25,7 @@ class Msgraph
                   :functions,
                   :singletons
 
-      def initialize(**args)
+      def initialize(args = {})
         # service root URL
         @context_url = args[:context_url]
         # token
@@ -81,7 +80,7 @@ class Msgraph
         end
       end
 
-      def request(**args)
+      def request(args = {})
         parsed_uri = URI(args[:uri])
         query = URI.decode_www_form(parsed_uri.query || '')
         parsed_uri.query = URI.encode_www_form(query)
@@ -228,9 +227,9 @@ class Msgraph
         @complex_types ||= metadata.xpath('//ComplexType').map do |complex_type|
           @type_names["#{schema_namespace}.#{complex_type["Name"]}"] =
             Odata::Types::ComplexType.new(
-              name:      "#{schema_namespace}.#{complex_type["Name"]}",
-              base_type: complex_type['BaseType'],
-              service:   self,
+              name:       "#{schema_namespace}.#{complex_type["Name"]}",
+              base_type:  complex_type['BaseType'],
+              dispatcher: self,
             )
         end
       end
@@ -245,7 +244,7 @@ class Msgraph
               base_type:  entity_type['BaseType'],
               open_type:  entity_type['OpenType'] == 'true',
               has_stream: entity_type['HasStream'] == 'true',
-              service:    self
+              dispatcher: self
             )
         end
       end
@@ -256,7 +255,7 @@ class Msgraph
           Odata::EntitySet.new(
             name:        entity_set['Name'],
             member_type: entity_set['EntityType'],
-            service:     self
+            dispatcher:  self
           )
         end
       end
@@ -376,9 +375,9 @@ class Msgraph
       def populate_singletons
         @singletons ||= metadata.xpath('//Singleton').map do |singleton|
           Odata::Singleton.new(
-            name:    singleton['Name'],
-            type:    singleton['Type'],
-            service: self
+            name:       singleton['Name'],
+            type:       singleton['Type'],
+            dispatcher: self
           )
         end
       end

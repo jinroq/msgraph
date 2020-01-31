@@ -3,7 +3,7 @@ class Msgraph
     attr_reader :type
     attr_reader :parent
 
-    def initialize(**args)
+    def initialize(args = {})
       @type            = args[:type]
       @graph           = args[:graph]
       @resource_name   = args[:resource_name]
@@ -37,7 +37,7 @@ class Msgraph
 
     # GET
     def find(id)
-      if response = graph.service.get("#{path}/#{URI.escape(id.to_s)}")
+      if response = graph.dispatcher.get("#{path}/#{URI.escape(id.to_s)}")
         klass = if member_type = specified_member_type(response)
           ClassBuilder.get_namespaced_class(response)
         else
@@ -211,7 +211,7 @@ class Msgraph
 
       result =
         begin
-          @graph.service.get(@next_link)
+          @graph.dispatcher.get(@next_link)
         rescue Odata::ClientError => e
           if matches = /Unsupported sort property '([^']*)'/.match(e.message)
             raise Msgraph::TypeError.new("Cannot sort by #{matches[1]}")
@@ -246,7 +246,7 @@ class Msgraph
     end
 
     def specified_member_type(entity_hash)
-      @graph.service.get_type_for_odata_response(entity_hash)
+      @graph.dispatcher.get_type_for_odata_response(entity_hash)
     end
   end
 end

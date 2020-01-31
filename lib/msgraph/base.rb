@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 class Msgraph
   class Base
-  def initialize(**args)
+  def initialize(args = {})
     @cached_navigation_property_values = {}
     @cached_property_values            = {}
     if args[:attributes]
@@ -27,7 +27,7 @@ class Msgraph
     self.class.const_get("ODATA_TYPE").name
   end
 
-  def as_json(**args)
+  def as_json(args = {})
     (if args[:only]
      @cached_property_values.select { |key,v| args[:only].include? key }
     elsif args[:except]
@@ -41,7 +41,7 @@ class Msgraph
     end
   end
 
-  def to_json(**args)
+  def to_json(args = {})
     as_json(args).to_json
   end
 

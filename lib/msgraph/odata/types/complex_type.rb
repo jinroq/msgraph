@@ -4,14 +4,14 @@ class Msgraph
       class ComplexType < BaseType
         attr_reader :base_type
 
-        def initialize(**args)
+        def initialize(args = {})
           super
-          @base_type = args[:base_type]
-          @service   = args[:service]
+          @base_type  = args[:base_type]
+          @dispatcher = args[:dispatcher]
         end
 
         def properties
-          @properties ||= @service.properties_for_type(name)
+          @properties ||= @dispatcher.properties_for_type(name)
         end
 
         def valid_value?(value)
