@@ -166,17 +166,6 @@ class Msgraph
         @type_names[type_name] || build_collection(type_name)
       end
 
-      # Build Msgraph::Odata::Types::CollectionType
-      def build_collection(collection_name)
-        # Collection(microsoft.graph.assignedPlan) -> microsoft.graph.assignedPlan
-        member_type_name = collection_name.gsub(/Collection\(([^)]+)\)/, '\\1')
-
-        Odata::Types::CollectionType.new(
-          name: collection_name,
-          member_type: @type_names[member_type_name]
-        )
-      end
-
       private
 
       # Fetch Microsoft Graph's metadata.
@@ -356,6 +345,17 @@ class Msgraph
           return_type:     return_type
         }
         Odata::Operation.new(params)
+      end
+
+      # Build Msgraph::Odata::Types::CollectionType
+      def build_collection(collection_name)
+        # Collection(microsoft.graph.assignedPlan) -> microsoft.graph.assignedPlan
+        member_type_name = collection_name.gsub(/Collection\(([^)]+)\)/, '\\1')
+
+        Odata::Types::CollectionType.new(
+          name: collection_name,
+          member_type: @type_names[member_type_name]
+        )
       end
 
       # 
