@@ -159,6 +159,13 @@ class Msgraph
         end
       end
 
+      # 
+      def get_type_by_name(type_name)
+        # If type_name exists as a key in @type_names, build the corresponding value,
+        # otherwise build collection.
+        @type_names[type_name] || build_collection(type_name)
+      end
+
       private
 
       # Fetch Microsoft Graph's metadata.
@@ -338,13 +345,6 @@ class Msgraph
           return_type:     return_type
         }
         Odata::Operation.new(params)
-      end
-
-      # 
-      def get_type_by_name(type_name)
-        # If type_name exists as a key in @type_names, build the corresponding value,
-        # otherwise build collection.
-        @type_names[type_name] || build_collection(type_name)
       end
 
       # Build Msgraph::Odata::Types::CollectionType
