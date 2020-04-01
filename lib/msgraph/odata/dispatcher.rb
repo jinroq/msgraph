@@ -290,24 +290,10 @@ class Msgraph
         operation_xml.xpath("./Parameter[@Name='bindingParameter']|./Parameter[@Name='bindingparameter']")
         binding_type =
           if operation_xml['IsBound'] == 'true'
-            binding_parameter = operation_xml.xpath("./Parameter[@Name='bindingParameter']|./Parameter[@Name='bindingparameter']")
+            binding_parameter = operation_xml.xpath("./Parameter[@Name='bindingParameter']|./Parameter[@Name='bindingparameter']|./Parameter[@Name='this']")
             if !binding_parameter.empty?
               type_name = binding_parameter.first['Type']
               get_type_by_name(type_name)
-            else
-              # do nohing...
-              #
-              # Actions and Functions MAY be bound to an entity type, primitive type,
-              # complex type, or a collection. 
-              # The first parameter of a bound operation is the binding parameter.
-              #
-              # But...
-              #
-              # <Action Name="createSession" IsBound="true">
-              #    <Parameter Name="this" Type="microsoft.graph.workbook"/>
-              #   <Parameter Name="persistChanges" Type="Edm.Boolean" Nullable="false"/>
-              #   <ReturnType Type="microsoft.graph.workbookSessionInfo"/>
-              # </Action>
             end
           end
 
