@@ -4,4 +4,6 @@ module Msgraph::Config
 
   API_VERSION_1 = 'v1.0'
   API_VERSION_2 = 'v2.0'
+
+  API_VERSION_BETA = 'beta'
 end
